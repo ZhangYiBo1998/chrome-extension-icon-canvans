@@ -75,15 +75,19 @@ const Home = (props) => {
 
     }, [fileList])
 
+    const isImageType = (type) => {
+        return /image\/.+/g.test(type);
+    };
 
     const beforeUpload = (file) => {
-        const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
-        if (!isJpgOrPng) {
-            message.error('You can only upload JPG/PNG file!');
+        if (!isImageType(file.type)) {
+            message.error('请上传图片!');
+            return Promise.reject();
         }
         const isLt2M = file.size / 1024 / 1024 < 1;
         if (!isLt2M) {
-            message.error('Image must smaller than 2MB!');
+            message.error('图片应该小于1MB!');
+            return Promise.reject();
         }
 
         return false;
@@ -91,6 +95,11 @@ const Home = (props) => {
 
     // 当文件变化时
     const onChange = ({fileList: newFileList}) => {
+        for (const newFile of newFileList) {
+            if(!isImageType(newFile.type)){
+                return;
+            }
+        }
         setFileList(newFileList);
     };
 
@@ -191,12 +200,16 @@ const Home = (props) => {
                     </Upload>
 
 
-                    <Button onClick={() => {
-                        resizeFileList.forEach((item) => {
-                            console.log(item);
-                            downloadFile(item.file, item.fileName)
-                        })
-                    }}>
+                    <Button
+                        type="primary"
+                        disabled={resizeFileList.length === 0}
+                        onClick={() => {
+                            resizeFileList.forEach((item) => {
+                                console.log(item);
+                                downloadFile(item.file, item.fileName)
+                            })
+                        }}
+                    >
                         下载
                     </Button>
                 </Space>
